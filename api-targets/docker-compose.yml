@@ -1,0 +1,84 @@
+networks:
+  api_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+services:
+  # ---------------- API TARGETS ----------------
+
+  pixi:
+    image: deadrobots/pixi
+    container_name: lab_pixi
+    ports:
+      - "8096:8000"
+    networks:
+      - api_network
+    restart: unless-stopped
+
+  crapi:
+    image: crapi/crapi-web:latest
+    container_name: lab_crapi_web
+    ports:
+      - "8097:80"
+    environment:
+      - DB_HOST=crapi_postgres
+      - DB_NAME=crapi
+      - DB_USER=crapi
+      - DB_PASSWORD=crapi123
+    depends_on:
+      - crapi_postgres
+    networks:
+      - api_network
+    restart: unless-stopped
+
+  crapi_postgres:
+    image: postgres:14
+    container_name: lab_crapi_postgres
+    environment:
+      - POSTGRES_DB=crapi
+      - POSTGRES_USER=crapi
+      - POSTGRES_PASSWORD=crapi123
+    networks:
+      - api_network
+    restart: unless-stopped
+
+  vulnerable_graphql:
+    image: dolevf/dvga
+    container_name: lab_vulnerable_graphql
+    ports:
+      - "8098:5013"
+    environment:
+      - WEB_HOST=0.0.0.0
+    networks:
+      - api_network
+    restart: unless-stopped
+
+  rest_api_goat:
+    image: secdim/rest-api-goat
+    container_name: lab_rest_api_goat
+    ports:
+      - "8099:8080"
+    networks:
+      - api_network
+    restart: unless-stopped
+
+  # API Gateway
+  kong:
+    image: kong:2.8-alpine
+    container_name: lab_kong
+    environment:
+      - KONG_DATABASE=off
+      - KONG_DECLARATIVE_CONFIG=/kong.yml
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
+    ports:
+      - "8100:8000" # Proxy
+      - "8101:8001" # Admin API
+    networks:
+      - api_network
+    restart: unless-stopped

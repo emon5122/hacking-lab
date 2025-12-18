@@ -1,0 +1,28 @@
+networks:
+  hacking_lab:
+    driver: bridge
+
+services:
+  metasploitable2:
+    image: tleemcjr/metasploitable2
+    container_name: lab_metasploitable2
+    ports:
+      - "8021:21" # FTP
+      - "8022:22" # SSH
+      - "8023:23" # Telnet
+      - "8025:25" # SMTP
+      - "8080:80" # HTTP
+      - "8139:139" # Samba
+      - "8445:445" # Samba
+      - "8512:512" # rexec
+      - "8513:513" # rlogin
+      - "8514:514" # rsh
+      - "1524:1524" # Bindshell
+      - "3306:3306" # MySQL
+      - "5432:5432" # PostgreSQL
+      - "6667:6667" # IRC
+      - "8180:8180" # Tomcat
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+    privileged: true

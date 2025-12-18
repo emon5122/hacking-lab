@@ -1,0 +1,250 @@
+# Master Docker Compose - All Services
+# This file runs all hacking lab services together
+# Network segmentation: Services are isolated to simulate real environments
+
+networks:
+  # DMZ - Public facing web applications
+  dmz_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+  # Internal network - Databases and backend services
+  internal_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+  # API network - API services
+  api_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+  # CI/CD network - Development pipeline
+  cicd_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.23.0.0/24
+
+  # Admin network - Privileged services
+  admin_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/24
+
+  # Vulnerable network - Highly exploitable targets
+  vuln_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24
+
+services:
+  # ==================== WEB APPLICATIONS ====================
+
+  dvwa:
+    image: vulnerables/web-dvwa
+    container_name: lab_dvwa
+    ports:
+      - "8081:80"
+    networks:
+      - dmz_network
+    restart: unless-stopped
+
+  juice_shop:
+    image: bkimminich/juice-shop
+    container_name: lab_juice_shop
+    ports:
+      - "8082:3000"
+    networks:
+      - dmz_network
+    restart: unless-stopped
+
+  bwapp:
+    image: raesene/bwapp
+    container_name: lab_bwapp
+    ports:
+      - "8083:80"
+    networks:
+      - dmz_network
+    restart: unless-stopped
+
+  webgoat:
+    image: webgoat/webgoat
+    container_name: lab_webgoat
+    ports:
+      - "8084:8080"
+    networks:
+      - dmz_network
+    restart: unless-stopped
+
+  mutillidae:
+    image: citizenstig/nowasp
+    container_name: lab_mutillidae
+    ports:
+      - "8085:80"
+    networks:
+      - dmz_network
+    restart: unless-stopped
+
+  # ==================== NETWORK TARGETS ====================
+
+  vuln_ssh:
+    image: rastasheep/ubuntu-sshd
+    container_name: lab_vuln_ssh
+    ports:
+      - "2222:22"
+    environment:
+      - ROOT_PASSWORD=root
+    networks:
+      - vuln_network
+      - internal_network
+    restart: unless-stopped
+
+  vuln_ftp:
+    image: fauria/vsftpd
+    container_name: lab_vuln_ftp
+    ports:
+      - "2121:21"
+      - "21100-21110:21100-21110"
+    environment:
+      - FTP_USER=ftpuser
+      - FTP_PASS=ftp123
+      - PASV_ADDRESS=127.0.0.1
+      - PASV_MIN_PORT=21100
+      - PASV_MAX_PORT=21110
+    networks:
+      - vuln_network
+    restart: unless-stopped
+
+  # ==================== PRIVILEGE ESCALATION ====================
+
+  metasploitable2:
+    image: tleemcjr/metasploitable2
+    container_name: lab_metasploitable2
+    ports:
+      - "8021:21" # FTP
+      - "8022:22" # SSH
+      - "8023:23" # Telnet
+      - "8025:25" # SMTP
+      - "8086:80" # HTTP
+      - "8139:139" # Samba
+      - "8445:445" # Samba
+      - "8512:512" # rexec
+      - "8513:513" # rlogin
+      - "8514:514" # rsh
+      - "1524:1524" # Bindshell
+      - "3306:3306" # MySQL
+      - "5432:5432" # PostgreSQL
+      - "6667:6667" # IRC
+      - "8180:8180" # Tomcat
+    networks:
+      - vuln_network
+      - internal_network
+    restart: unless-stopped
+    privileged: true
+
+  # ==================== ADVANCED TARGETS ====================
+
+  ad_dc:
+    image: instantlinux/samba-dc
+    container_name: lab_ad_dc
+    hostname: dc01
+    environment:
+      REALM: CORP.LOCAL
+      DOMAIN: CORP
+      ADMIN_PASS: Passw0rd!
+      INSECURE_PASSWORDSETTING: "true"
+    ports:
+      - "389:389" # LDAP
+      - "636:636" # LDAPS
+      - "88:88" # Kerberos
+      - "464:464" # Kerberos password change
+      - "3268:3268" # Global Catalog
+    networks:
+      - admin_network
+      - internal_network
+    restart: unless-stopped
+    dns_search: corp.local
+
+  ad_client:
+    image: ubuntu:22.04
+    container_name: lab_ad_client
+    hostname: client01
+    depends_on:
+      - ad_dc
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    command: >
+      bash -c "apt-get update && 
+               apt-get install -y krb5-user samba-common-bin ldap-utils &&
+               sleep infinity"
+    networks:
+      - admin_network
+    dns:
+      - ad_dc
+    dns_search: corp.local
+    restart: unless-stopped
+
+  docker_escape:
+    image: ubuntu:20.04
+    container_name: lab_docker_escape
+    hostname: escapeme
+    privileged: true
+    volumes:
+      - /:/host
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      bash -c "apt-get update && 
+               apt-get install -y curl wget vim &&
+               echo 'flag{docker_socket_exposed}' > /flag.txt &&
+               sleep infinity"
+    networks:
+      - admin_network
+    restart: unless-stopped
+
+  struts_rce:
+    image: vulhub/struts2:s2-053
+    container_name: lab_struts_rce
+    ports:
+      - "8090:8080"
+    networks:
+      - dmz_network
+      - internal_network
+    restart: unless-stopped
+
+  log4shell:
+    image: vulhub/log4j:2.8.1
+    container_name: lab_log4shell
+    ports:
+      - "8091:8080"
+    networks:
+      - dmz_network
+      - internal_network
+    restart: unless-stopped
+
+  spring4shell:
+    image: vulhub/spring-data-commons:2.0.5
+    container_name: lab_spring4shell
+    ports:
+      - "8092:8080"
+    networks:
+      - dmz_network
+      - api_network
+    restart: unless-stopped
+
+  flags:
+    image: busybox
+    container_name: lab_flags
+    volumes:
+      - ./advanced-targets/flags:/flags:ro
+    command: sh -c "echo 'Flags stored. Good luck!' && sleep infinity"
+    networks:
+      - admin_network
+    restart: unless-stopped

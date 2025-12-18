@@ -1,0 +1,138 @@
+networks:
+  hacking_lab:
+    driver: bridge
+
+services:
+  # ---------------- CI/CD TARGETS ----------------
+
+  jenkins:
+    image: jenkins/jenkins:2.387.1
+    container_name: lab_jenkins
+    privileged: true
+    user: root
+    ports:
+      - "8110:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JENKINS_OPTS=--httpPort=8080
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  gitea:
+    image: gitea/gitea:1.19
+    container_name: lab_gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=gitea_db:5432
+      - GITEA__database__NAME=gitea
+      - GITEA__database__USER=gitea
+      - GITEA__database__PASSWD=gitea
+    ports:
+      - "8111:3000"
+      - "2222:22"
+    volumes:
+      - gitea_data:/data
+    depends_on:
+      - gitea_db
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  gitea_db:
+    image: postgres:14
+    container_name: lab_gitea_db
+    environment:
+      - POSTGRES_USER=gitea
+      - POSTGRES_PASSWORD=gitea
+      - POSTGRES_DB=gitea
+    volumes:
+      - gitea_db:/var/lib/postgresql/data
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  gitlab:
+    image: gitlab/gitlab-ce:15.11.0-ce.0
+    container_name: lab_gitlab
+    hostname: gitlab.local
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.local:8112'
+        gitlab_rails['initial_root_password'] = 'Passw0rd!'
+    ports:
+      - "8112:8112"
+      - "8113:80"
+      - "2223:22"
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+    shm_size: 256m
+
+  drone:
+    image: drone/drone:2.16
+    container_name: lab_drone
+    environment:
+      - DRONE_GITEA_SERVER=http://gitea:3000
+      - DRONE_GIT_ALWAYS_AUTH=false
+      - DRONE_RPC_SECRET=secret123
+      - DRONE_SERVER_HOST=localhost:8114
+      - DRONE_SERVER_PROTO=http
+      - DRONE_USER_CREATE=username:admin,admin:true
+    ports:
+      - "8114:80"
+    volumes:
+      - drone_data:/data
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  registry:
+    image: registry:2
+    container_name: lab_docker_registry
+    ports:
+      - "5000:5000"
+    environment:
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+    volumes:
+      - registry_data:/var/lib/registry
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  sonarqube:
+    image: sonarqube:9.9-community
+    container_name: lab_sonarqube
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    ports:
+      - "8115:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
+  gitea_data:
+  gitea_db:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+  drone_data:
+  registry_data:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:

@@ -1,0 +1,28 @@
+FLAG{br0k3n_0ut_0f_th3_c0nt41n3r_3sc4p3d_2f8b5c6a}
+
+👑 ROOT ACCESS ACHIEVED!
+
+╔══════════════════════════════════════════════════════════╗
+║  You've escaped the container and reached the host!     ║
+║  Docker socket exploitation: SUCCESSFUL                  ║
+║  Privileged container abuse: SUCCESSFUL                  ║
+║  Host filesystem access: GRANTED                         ║
+╚══════════════════════════════════════════════════════════╝
+
+You now control:
+✓ All container environments
+✓ Host system files at /host/*
+✓ Docker daemon via /var/run/docker.sock
+✓ Ability to spawn privileged containers
+
+The crown jewels are within reach. Domain Admin awaits.
+Target: Active Directory Domain Controller @ 172.24.0.10
+
+Score: 500 points
+Timestamp: [CAPTURE_TIME_HERE]
+
+"Containers are not VMs. Treat them as security boundaries
+at your own peril." - Container Security 101
+
+Next objective: Compromise the AD DC and claim the final flag.
+Hint: Check /host/var/log/auth.log for AD service account creds.

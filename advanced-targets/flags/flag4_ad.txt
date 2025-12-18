@@ -1,0 +1,50 @@
+FLAG{d0m41n_4dm1n_pwn3d_g4m3_0v3r_9a2c7f3e}
+
+🏆 *** ULTIMATE VICTORY ACHIEVED *** 🏆
+
+╔═══════════════════════════════════════════════════════════════╗
+║           ACTIVE DIRECTORY DOMAIN COMPROMISED                ║
+║                                                               ║
+║  Domain: CORP.LOCAL                                          ║
+║  Domain Admin: Administrator                                  ║
+║  Golden Ticket: FORGED                                       ║
+║  Full Network Control: ACHIEVED                              ║
+╚═══════════════════════════════════════════════════════════════╝
+
+🎉 Congratulations, Elite Hacker! 🎉
+
+Your attack chain was flawless:
+1. ✓ Web Application Exploitation (DMZ)
+2. ✓ Credential Harvesting (Internal Network)
+3. ✓ Container Escape (Host Compromise)
+4. ✓ Domain Takeover (Crown Jewels)
+
+You've demonstrated mastery of:
+→ SQL Injection & Web Exploitation
+→ Network Pivoting & Lateral Movement  
+→ Container Security Bypass
+→ Active Directory Attack Techniques
+→ Kerberoasting / Golden Ticket Attacks
+
+FINAL SCORE: 1,000 points
+Timestamp: [CAPTURE_TIME_HERE]
+
+════════════════════════════════════════════════════════════════
+
+              🔐 BONUS CONTENT UNLOCKED 🔐
+
+You've earned: "Shadow Admin" Achievement
+
+Real-world lesson: This attack chain represents actual APT tactics.
+Multi-stage attacks starting from the DMZ and pivoting to critical
+assets are how modern breaches happen. Your skills are valuable -
+use them ethically!
+
+"The quieter you become, the more you are able to hear."
+                                        - Kali Linux Motto
+
+════════════════════════════════════════════════════════════════
+
+Share your victory: #HackingLabPwned #CORP_Compromised
+
+Thank you for practicing responsible hacking. Stay curious. 🚀

@@ -1,0 +1,49 @@
+networks:
+  hacking_lab:
+    driver: bridge
+
+services:
+  dvwa:
+    image: vulnerables/web-dvwa
+    container_name: lab_dvwa
+    ports:
+      - "8081:80"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  juice_shop:
+    image: bkimminich/juice-shop
+    container_name: lab_juice_shop
+    ports:
+      - "8082:3000"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  bwapp:
+    image: raesene/bwapp
+    container_name: lab_bwapp
+    ports:
+      - "8083:80"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  webgoat:
+    image: webgoat/webgoat
+    container_name: lab_webgoat
+    ports:
+      - "8084:8080"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  mutillidae:
+    image: citizenstig/nowasp
+    container_name: lab_mutillidae
+    ports:
+      - "8085:80"
+    networks:
+      - hacking_lab
+    restart: unless-stopped

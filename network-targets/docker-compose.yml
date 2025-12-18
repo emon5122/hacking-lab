@@ -1,0 +1,31 @@
+networks:
+  hacking_lab:
+    driver: bridge
+
+services:
+  vuln_ssh:
+    image: rastasheep/ubuntu-sshd
+    container_name: lab_vuln_ssh
+    ports:
+      - "2222:22"
+    environment:
+      - ROOT_PASSWORD=root
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  vuln_ftp:
+    image: fauria/vsftpd
+    container_name: lab_vuln_ftp
+    ports:
+      - "2121:21"
+      - "21100-21110:21100-21110"
+    environment:
+      - FTP_USER=ftpuser
+      - FTP_PASS=ftp123
+      - PASV_ADDRESS=127.0.0.1
+      - PASV_MIN_PORT=21100
+      - PASV_MAX_PORT=21110
+    networks:
+      - hacking_lab
+    restart: unless-stopped

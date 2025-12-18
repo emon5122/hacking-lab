@@ -1,0 +1,105 @@
+networks:
+  hacking_lab:
+    driver: bridge
+
+services:
+  # ---------------- ACTIVE DIRECTORY ----------------
+
+  ad_dc:
+    image: instantlinux/samba-dc
+    container_name: lab_ad_dc
+    hostname: dc01
+    environment:
+      REALM: CORP.LOCAL
+      DOMAIN: CORP
+      ADMIN_PASS: Passw0rd!
+      INSECURE_PASSWORDSETTING: "true"
+    ports:
+      - "389:389" # LDAP
+      - "636:636" # LDAPS
+      - "88:88" # Kerberos
+      - "464:464" # Kerberos password change
+      - "3268:3268" # Global Catalog
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+    dns_search: corp.local
+
+  ad_client:
+    image: ubuntu:22.04
+    container_name: lab_ad_client
+    hostname: client01
+    depends_on:
+      - ad_dc
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+    command: >
+      bash -c "apt-get update && 
+               apt-get install -y krb5-user samba-common-bin ldap-utils &&
+               sleep infinity"
+    networks:
+      - hacking_lab
+    dns:
+      - ad_dc
+    dns_search: corp.local
+    restart: unless-stopped
+
+  # ---------------- DOCKER ESCAPE ----------------
+
+  docker_escape:
+    image: ubuntu:20.04
+    container_name: lab_docker_escape
+    hostname: escapeme
+    privileged: true
+    volumes:
+      - /:/host
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      bash -c "apt-get update && 
+               apt-get install -y curl wget vim &&
+               echo 'flag{docker_socket_exposed}' > /flag.txt &&
+               sleep infinity"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  # ---------------- REAL CVE TARGETS ----------------
+
+  struts_rce:
+    image: vulhub/struts2:s2-045
+    container_name: lab_struts_rce
+    ports:
+      - "8090:8080"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  log4shell:
+    image: vulhub/log4j:2.15.0
+    container_name: lab_log4shell
+    ports:
+      - "8091:8080"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  spring4shell:
+    image: vulhub/spring-core-rce
+    container_name: lab_spring4shell
+    ports:
+      - "8092:8080"
+    networks:
+      - hacking_lab
+    restart: unless-stopped
+
+  # ---------------- CTF FLAGS ----------------
+
+  flags:
+    image: busybox
+    container_name: lab_flags
+    volumes:
+      - ./flags:/flags:ro
+    command: sh -c "echo 'Flags stored. Good luck!' && sleep infinity"
+    networks:
+      - hacking_lab
+    restart: unless-stopped

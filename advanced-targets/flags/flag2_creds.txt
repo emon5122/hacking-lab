@@ -1,0 +1,21 @@
+FLAG{r3us3d_p4ssw0rds_4r3_h4ck3rs_b3st_fr13nd_7d9e2a1c}
+
+🔑 Excellent work, credential hunter!
+
+You found: ssh_user:S3cur3P@ss123
+
+Password reuse is a critical vulnerability. This same password works on:
+- Internal SSH server (172.21.0.3)
+- FTP server (172.25.0.4) 
+- And maybe... the AD domain?
+
+You now have a foothold in the internal network. Time to escalate.
+
+Score: 200 points
+Timestamp: [CAPTURE_TIME_HERE]
+
+Fun fact: 65% of people reuse passwords across multiple systems.
+Never be that person... unless you're practicing in a lab. 😉
+
+"The weakest link is not the technology, it's the human who
+configures it." - Kevin Mitnick

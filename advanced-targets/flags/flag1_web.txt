@@ -1,0 +1,15 @@
+FLAG{w3lc0m3_t0_th3_r4bb1t_h0l3_4c3f891b}
+
+🎯 Congratulations! You've breached the DMZ perimeter!
+
+Your SQL injection worked like a charm. But this is just the beginning...
+The real treasure lies deeper in the network. Can you pivot?
+
+Hint: Check the database you just compromised. Someone left their
+infrastructure credentials in the 'admin_notes' table.
+
+Score: 100 points
+Timestamp: [CAPTURE_TIME_HERE]
+
+"In the world of hacking, the front door is rarely the way in,
+but it's always worth checking if it's unlocked." - Unknown
